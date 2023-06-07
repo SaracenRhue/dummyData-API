@@ -15,7 +15,21 @@ app.add_middleware(
 fake = Faker()
 
 
-
+@app.get('/movie/{amount}', response_model=List[Any])
+def get_fake_data(amount: int = 1):
+    data = []
+    for _ in range(amount):
+        item = {
+        "id": fake.unique.random_number(digits=5),
+        "title": fake.catch_phrase(),
+        "year": fake.year(),
+        "length": f"{random.randint(90, 150)} min",
+        "rating": round(random.uniform(1, 10), 2),
+        "description": fake.text(),
+        "image": fake.image_url(),
+    }
+        data.append(item)
+    return data
 
 @app.get('/gene/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1 ):

@@ -18,7 +18,7 @@ def check_amount(amount: int):
     if amount < 1:
         raise HTTPException(status_code=400, detail="Amount must be greater than 0")
     elif amount > 10_000:
-        raise HTTPException(status_code=400, detail="Amount must be less than 100.000")
+        raise HTTPException(status_code=400, detail="Amount must be max 100.000")
 
 @app.get('/movie/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):

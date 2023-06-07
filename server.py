@@ -14,29 +14,15 @@ app.add_middleware(
 )
 fake = Faker()
 
-
-# hello world
-@app.get("/")
-def read_root():
-    return {
-        'endpoints': [
-            '/name/amount',
-            '/address/amount',
-            '/text/amount',
-            '/image/amount',
-            '/movie/amount',
-            '/gene/amount',
-            '/userProfile/amount',
-            '/order/amount',
-            '/socialMediaPost/amount',
-            '/productInfo/amount',
-            '/contactInfo/amount',
-            '/providers'
-        ]
-    }
+def check_amount(amount: int):
+    if amount < 1:
+        raise HTTPException(status_code=400, detail="Amount must be greater than 0")
+    elif amount > 10_000:
+        raise HTTPException(status_code=400, detail="Amount must be less than 100.000")
 
 @app.get('/movie/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):
+    check_amount(amount)
     data = []
     for _ in range(amount):
         item = {
@@ -53,6 +39,7 @@ def get_fake_data(amount: int = 1):
 
 @app.get('/gene/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1 ):
+    check_amount(amount)
     data = []
     for i in range(amount):
         gene = {}
@@ -80,6 +67,7 @@ def get_fake_data(amount: int = 1 ):
 
 @app.get('/userProfile/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1 ):
+    check_amount(amount)
     data = []
     for _ in range(amount):
         item = {'username': fake.user_name(), 'name': fake.name(), 'email': fake.email(), 'password': fake.password(), 'dob': fake.date_of_birth(), 'bio': fake.text(), 'address': fake.address()}
@@ -88,6 +76,7 @@ def get_fake_data(amount: int = 1 ):
 
 @app.get('/order/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):
+    check_amount(amount)
     data = []
     for _ in range(amount):
         item = {'orderId': fake.uuid4(), 'product': fake.word(), 'quantity': fake.random_int(min=1, max=10), 'price': fake.pydecimal(left_digits=2, right_digits=2, positive=True), 'shippingAddress': fake.address(), 'status': fake.random_element(elements=('Pending', 'Shipped', 'Delivered', 'Returned'))}
@@ -96,6 +85,7 @@ def get_fake_data(amount: int = 1):
 
 @app.get('/socialMediaPost/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):
+    check_amount(amount)
     data = []
     for _ in range(amount):
         item = {'username': fake.user_name(), 'post': fake.text(), 'likes': fake.random_int(min=0, max=10000), 'comments': fake.random_int(min=0, max=5000), 'shares': fake.random_int(min=0, max=5000), 'timestamp': fake.date_time_this_year()}
@@ -104,6 +94,7 @@ def get_fake_data(amount: int = 1):
 
 @app.get('/image/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):
+    check_amount(amount)
     data = []
     for _ in range(amount):
         item = {'name': fake.name(), 'url': fake.image_url()}
@@ -112,6 +103,7 @@ def get_fake_data(amount: int = 1):
 
 @app.get('/productInfo/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):
+    check_amount(amount)
     data = []
     for _ in range(amount):
         item = {'name': fake.name(), 'price': fake.pydecimal(left_digits=2, right_digits=2, positive=True), 'color': fake.color_name(), 'size': fake.random_int(min=1, max=10)}
@@ -120,6 +112,7 @@ def get_fake_data(amount: int = 1):
 
 @app.get('/contactInfo/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):
+    check_amount(amount)
     data = []
     for _ in range(amount):
         item = {'name': fake.name(), 'email': fake.email(), 'phone': fake.phone_number(), 'address': fake.address(), 'job': fake.job(), 'company': fake.company(), 'ssn': fake.ssn()}
@@ -128,11 +121,19 @@ def get_fake_data(amount: int = 1):
 
 @app.get('/{provider}/{amount}', response_model=List[Any])
 def get_fake_data(provider: str, amount: int = 1):
+    check_amount(amount)
     faker_func = getattr(fake, provider, None)
     if faker_func is None:
         raise HTTPException(status_code=400, detail=f"Provider {provider} not found")
     return [faker_func() for _ in range(amount)]
 
-@app.get('/providers', response_model=List[str])
+@app.get('/')
 def get_providers():
-    return [provider for provider in dir(fake) if provider[0].islower()]
+    usage = '/provider/amount'
+    data = [f'/{provider}/1' for provider in dir(fake) if provider[0].islower()]
+    remove = ["tar","add_provider","time_object","date_object","enum","factories","format","get_arguments","get_formatter","get_providers","del_arguments","items","date_between","date_between_dates","xml","zip","zipcode_in_state"]
+    custom = ['movie','gene','userProfile','order','socialMediaPost','productInfo','contactInfo']
+    for i in remove: data.remove(f'/{i}/1')
+    for i in custom: data.append(f'/{i}/1')
+    data.sort()
+    return {'usage': usage, 'entry_points': data}

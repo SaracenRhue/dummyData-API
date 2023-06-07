@@ -15,6 +15,11 @@ app.add_middleware(
 fake = Faker()
 
 
+# hello world
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
 @app.get('/movie/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):
     data = []

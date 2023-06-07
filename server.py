@@ -18,7 +18,22 @@ fake = Faker()
 # hello world
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {
+        'endpoints': [
+            '/name/amount',
+            '/address/amount',
+            '/text/amount',
+            '/image/amount',
+            '/movie/amount',
+            '/gene/amount',
+            '/userProfile/amount',
+            '/order/amount',
+            '/socialMediaPost/amount',
+            '/productInfo/amount',
+            '/contactInfo/amount',
+            '/providers'
+        ]
+    }
 
 @app.get('/movie/{amount}', response_model=List[Any])
 def get_fake_data(amount: int = 1):

@@ -1,8 +1,17 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from faker import Faker
 from typing import List, Any
 import random
+import logging
+from logging.handlers import RotatingFileHandler
+
+
+logFile = "api.log"
+logger = logging.getLogger("uvicorn.access")
+handler = RotatingFileHandler(logFile, maxBytes=10000, backupCount=1000)
+logger.addHandler(handler)
+
 
 app = FastAPI()
 app.add_middleware(
@@ -13,6 +22,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 fake = Faker()
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logging.info('Incoming request: %s %s', request.method, request.url)
+    response = await call_next(request)
+    logging.info('Response status code: %s', response.status_code)
+    return response
+
+
+
 
 def check_amount(amount: int):
     if amount < 1:
